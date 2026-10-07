@@ -25,9 +25,12 @@ MODEL_MAPPING_DICT = {'biggait': 'body_data',
                       'kprpe': 'face_data',
                       'adaface': 'face_data',
                       'insightface': 'face_data',
-                      'arcface': 'face_data'}
+                      'arcface': 'face_data',
+                      'pipa-head': 'head_data',
+                      'pipa-upper': 'body_data'}
 
-MODEL_DIM_KEYS = {'adaface': 512, 'kprpe': 512, 'arcface': 512, 'insightface': 512}
+MODEL_DIM_KEYS = {'adaface': 512, 'kprpe': 512, 'arcface': 512, 'insightface': 512,
+                  'pipa-head': 2048, 'pipa-upper': 2048}
 
 
 def hook_fn(module, input, output):
@@ -210,8 +213,12 @@ class QME(nn.Module):
                 self.face_model[model_name] = build_face_backbone(backbone_cfg, mode=model_name)
             elif 'biggait' in model_name:
                 self.backbone_dict[model_name] = build_gait_backbone(backbone_cfg, mode=model_name)
-            elif 'cal' in model_name or 'agrl' in model_name or 'aim' in model_name:
+            elif 'cal' in model_name or 'agrl' in model_name or 'aim' in model_name or 'pipa-' in model_name:
                 self.backbone_dict[model_name] = build_body_backbone(backbone_cfg, mode=model_name)
+            elif 'pipa-' in model_name:
+                key = 'pipa_head_backbone_path' if model_name == 'pipa-head' else 'pipa_upper_backbone_path'
+                self.backbone_dict[model_name] = load_pipa_expert(backbone_cfg[key])
+                self.backbone_dict[model_name].mode = model_name
             elif 'qwen2.5' in model_name:
                 self.backbone_dict[model_name] = build_vlm_backbone(backbone_cfg, mode=model_name)
             else:
@@ -379,6 +386,15 @@ class QME(nn.Module):
                     for idx in [self.backbone_dict[mode].layer2, self.backbone_dict[mode].layer3]:
                         intermediate_feats.append(einops.rearrange(idx.hook_output, 'bs c t h w ->bs t c h w')) # list of (B * T, C=, H, W)                
                 
+        elif 'pipa-' in mode:
+            with torch.no_grad():
+                body = einops.rearrange(body, 'b c t h w -> (b t) c h w')
+                body = self.backbone_dict[mode](body)
+                body = einops.rearrange(body, '(b t) d -> b t d', b=bs)
+                if aggregated:
+                    body = body.mean(dim=1)
+            intermediate_feats = []
+
         elif 'agrl' in mode:
             with torch.no_grad():
                 # generate pose related graph for pretrained AGRL follow the paper MEVID
@@ -1202,7 +1218,7 @@ class Mlp(nn.Module):
 
 def sim_fn(probe_feats, gallery_feats, model_name, norm_method='none'):
         # simiarity function for different models (e.g., cos_sim/euc_dist)
-        if 'kprpe' in model_name or 'adaface' in model_name or 'arcface' in model_name or 'cal' in model_name or 'agrl' in model_name or 'aim' in model_name:
+        if 'kprpe' in model_name or 'adaface' in model_name or 'arcface' in model_name or 'cal' in model_name or 'agrl' in model_name or 'aim' in model_name or 'pipa-' in model_name:
             scores = F.cosine_similarity(probe_feats.unsqueeze(1), gallery_feats.unsqueeze(0), dim=2)
         elif 'biggait' in model_name or 'openset' in model_name:
             bs = probe_feats.shape[0]

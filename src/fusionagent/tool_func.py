@@ -25,7 +25,7 @@ def sim_fn(probe_feats, gallery_feats, model_name, norm_method='none'):
         A tensor of shape (P, G) with similarity scores, where higher values indicate greater similarity.
     """
     # simiarity function for different models (e.g., cos_sim/euc_dist)
-    if 'kprpe' in model_name or 'adaface' in model_name or 'arcface' in model_name or 'cal' in model_name or 'agrl' in model_name or 'aim' in model_name:
+    if 'kprpe' in model_name or 'adaface' in model_name or 'arcface' in model_name or 'cal' in model_name or 'agrl' in model_name or 'aim' in model_name or 'pipa-' in model_name:
         scores = F.cosine_similarity(probe_feats.unsqueeze(1), gallery_feats.unsqueeze(0), dim=2)
     elif 'biggait' in model_name:
         bs = probe_feats.shape[0]
@@ -53,8 +53,9 @@ def get_embedding(sequence: dict, model: Model_Wrapper):
         We use average pooling to get the sequence-level embedding, except some video-based models (e.g., 'biggait', 'agrl', 'cal-mevid').
     """
     model_type = MODEL_MAPPING_DICT[model.mode]
-    if model_type == 'face_data':
-        # handle empty face inside the sequence
+    if model_type in ('face_data', 'head_data'):
+        # PIPA head_data is carried through face_pil_image for compatibility
+        # with the upstream two-stream trainer.
         inputs = sequence['face_pil_image']
         if len(inputs) == 0 or all(x is None for x in inputs):
             return {'embedding': torch.zeros(1, MODEL_DIM_KEYS[model.mode])}

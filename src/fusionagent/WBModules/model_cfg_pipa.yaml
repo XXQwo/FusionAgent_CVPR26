@@ -1,0 +1,7 @@
+# PIPA uses two still-image cues. Do not add BigGait: PIPA has no gait/video.
+model_list:
+  - pipa-head
+  - pipa-upper
+
+pipa_head_backbone_path: "./src/fusionagent/checkpoints/PIPA/pipa-head-resnet50.pth"
+pipa_upper_backbone_path: "./src/fusionagent/checkpoints/PIPA/pipa-upper-resnet50.pth"

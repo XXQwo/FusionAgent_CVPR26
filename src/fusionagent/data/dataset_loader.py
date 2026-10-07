@@ -49,10 +49,12 @@ class ImageDataset(Dataset):
                 img = read_image(img_path)
                 clip = [img]
             else:
-                if self.model_mapping_dict[mode] == 'body_data':
-                    clip = [Image.fromarray(self.dataset[self.model_mapping_dict[mode]][img_path][:])]
-                else:
+                source_key = self.model_mapping_dict[mode]
+                if source_key == 'face_data':
                     clip = self.face_sampler(img_path)
+                else:
+                    # Generic H5 cue support (body_data/head_data/etc.).
+                    clip = [Image.fromarray(self.dataset[source_key][img_path][:])]
             if self.transform is not None:
                 clip = [self.transform[mode](img) for img in clip]
             # trans (C x H x W) to (C x T=1 x H x W)
@@ -400,15 +402,23 @@ class InterleaveDataset(Dataset):
             img_id = os.path.basename(img_path)
             
             # Check if face data exists for this image
-            has_face = (img_dir in self.dataset.get('face_data', {}) and 
-                           img_id in self.dataset['face_data'][img_dir])
+            if self.dataset['dataset_name'] == 'pipa':
+                # PIPA uses the annotated head crop as the second visual stream.
+                # It is stored as one dataset per instance, not a face_0 subgroup.
+                has_face = img_path in self.dataset.get('face_data', {})
+            else:
+                has_face = (img_dir in self.dataset.get('face_data', {}) and 
+                               img_id in self.dataset['face_data'][img_dir])
             
             # Create subject ID
             subject_id = "_".join([self.config.DATA.DATASET, str(pid)])
             if has_face:
-                # mevid applied a data cleaning process, so the index may not be face_0
-                face_keys = list(self.dataset['face_data'][img_path].keys())
-                face_image_keys.append(img_path+f'/{face_keys[0]}')
+                if self.dataset['dataset_name'] == 'pipa':
+                    face_image_keys.append(img_path)
+                else:
+                    # mevid applied a data cleaning process, so the index may not be face_0
+                    face_keys = list(self.dataset['face_data'][img_path].keys())
+                    face_image_keys.append(img_path+f'/{face_keys[0]}')
             # else:
             #     # continue
             #     if self.dataset['dataset_name'] == 'mevid' and self.max_samples is not None:

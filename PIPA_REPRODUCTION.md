@@ -124,14 +124,16 @@ Recommended reporting:
 Also report average number of expert calls per query. This is central to the
 FusionAgent claim.
 
-## Important limitation
+## Evaluation-path note
 
-The upstream trainer assumes a ReID-style global train center while PIPA's test
-protocol uses person-specific test0/test1 registration. This branch adapts the
-data and experts first; before publishing final PIPA numbers, verify that the
-evaluation path builds/uses gallery centers from the active test fold rather
-than train identities. The precomputed test score matrices already encode the
-active query/gallery fold, but the interactive tool-result path should be
-checked in an end-to-end run.
+The upstream trainer initialises train-identity centers for tool execution, but
+during evaluation it overwrites each tool's predicted identity from the
+precomputed **test score matrix**. For PIPA, that score matrix is built from the
+active test0/test1 query-gallery fold, so the identity shown back to the agent
+comes from the correct PIPA gallery. The unused train-center computation is
+still inefficient and should be removed in a later cleanup.
+
+Run the complete pipeline once before publishing results and verify the
+query/gallery counts and identity set for both directions.
 
 No runtime tests or PIPA training have been executed by this commit.

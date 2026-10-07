@@ -174,6 +174,23 @@ def get_transforms(mode='kprpe', config=None, dataset_type='vid'):
         ])
         temporal_transform_train, temporal_transform_test = None, None
 
+    elif 'pipa-head' in mode or 'pipa-upper' in mode:
+        # Still-image PIPA cue experts use ImageNet-normalized 224x224 crops.
+        train_transform = T.Compose([
+            T.Resize((224, 224)),
+            T.RandomHorizontalFlip(),
+            T.RandomCroping(p=0.2),
+            T.ToTensor(),
+            T.RandomErasing(),
+            T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+        test_transform = T.Compose([
+            T.Resize((224, 224)),
+            T.ToTensor(),
+            T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+        temporal_transform_train, temporal_transform_test = None, None
+
     elif 'biggait' in mode:
         train_transform = T.Compose([
             T.Resize((256, 128)),

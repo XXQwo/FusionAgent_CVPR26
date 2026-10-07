@@ -22,6 +22,7 @@ import shutil
 from WBModules.Biggait.modeling.models.BigGait import BigGait__Dinov2_Gaitbase as GaitModel
 from WBModules.AGRL.torchreid.utils.reidtools import calc_splits
 from data.transforms import get_transforms
+from WBModules.pipa_expert import load_pipa_expert
 
 
 MODEL_MAPPING_DICT = {'biggait': 'body_data',
@@ -34,9 +35,12 @@ MODEL_MAPPING_DICT = {'biggait': 'body_data',
                       'kprpe': 'face_data',
                       'adaface': 'face_data',
                       'insightface': 'face_data',
-                      'arcface': 'face_data'}
+                      'arcface': 'face_data',
+                      'pipa-head': 'head_data',
+                      'pipa-upper': 'body_data'}
 
-MODEL_DIM_KEYS = {'adaface': 512, 'kprpe': 512, 'arcface': 512, 'insightface': 512}
+MODEL_DIM_KEYS = {'adaface': 512, 'kprpe': 512, 'arcface': 512, 'insightface': 512,
+                  'pipa-head': 2048, 'pipa-upper': 2048}
 
 DEFAULT_BACKBONE_CFG = yaml.safe_load(open(os.path.join(os.path.dirname(__file__), 'model_cfg_ccvid.yaml'), 'r'))
 
@@ -257,6 +261,11 @@ class Model_Wrapper(nn.Module):
             return build_gait_backbone(self.backbone_cfg, self.mode)
         elif self.mode in ['cal-ccvid', 'cal-mevid', 'cal-ltcc', 'agrl', 'aim']:
             return build_body_backbone(self.backbone_cfg, self.mode)
+        elif self.mode in ['pipa-head', 'pipa-upper']:
+            key = 'pipa_head_backbone_path' if self.mode == 'pipa-head' else 'pipa_upper_backbone_path'
+            model = load_pipa_expert(self.backbone_cfg[key])
+            model.mode = self.mode
+            return model
         else:
             raise NotImplementedError(f'Unsupported model mode: {self.mode}')
     

@@ -1225,7 +1225,11 @@ class Qwen2VLGRPOTrainer(Trainer):
                 if k in ['GR_top1', 'GR_mAP', r'TAR@1.00%FAR', r'FNIR@1.00%FPIR']:
                     eval_results[f"{metric_key_prefix}_{prompt_type}_{k}"] = v
             
-            eval_results[f"{metric_key_prefix}_{prompt_type}_performance"] = fused_result['GR_top1'] + fused_result['GR_mAP'] + fused_result[r'TAR@1.00%FAR'] - fused_result[r'FNIR@1.00%FPIR']
+            if dataset_name == 'pipa':
+                # Canonical PIPA reporting is closed-set recognition rate.
+                eval_results[f"{metric_key_prefix}_{prompt_type}_performance"] = fused_result['GR_top1']
+            else:
+                eval_results[f"{metric_key_prefix}_{prompt_type}_performance"] = fused_result['GR_top1'] + fused_result['GR_mAP'] + fused_result[r'TAR@1.00%FAR'] - fused_result[r'FNIR@1.00%FPIR']
             eval_results[f"{metric_key_prefix}_{prompt_type}_answer_accuracy"] = acc_answer_rate
             eval_results[f"{metric_key_prefix}_{prompt_type}_avg_time_s"] = avg_time_per_sample
             # eval_results[f"{metric_key_prefix}_{prompt_type}_flops"] = total_flops_all_processes

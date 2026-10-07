@@ -505,6 +505,11 @@ def test_score(score_mat, merge_score_mat,
         logger.info("----------------- General Results --------------------------")
         logger.info('top1:{:.1%} top5:{:.1%} top10:{:.1%} top20:{:.1%} mAP:{:.1%}'.format(cmc[0], cmc[4], cmc[9], cmc[19], mAP))
         logger.info("------------------------------------------------------------")
+    if dataset == 'pipa':
+        # PIPA is a closed-set person-recognition protocol. The canonical
+        # headline metric is recognition rate (Rank-1); clothes/open-set
+        # ReID metrics are not part of this benchmark.
+        return gen_res
     if dataset in ['last', 'deepchange', 'vcclothes_sc', 'vcclothes_cc']: return cmc[0]
 
     cmc, mAP = evaluate_with_clothes(score_mat, q_pids, g_pids, q_camids, g_camids, q_clothes_ids, g_clothes_ids, mode='SC')

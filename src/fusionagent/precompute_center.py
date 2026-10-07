@@ -168,7 +168,7 @@ def compute_mod_center_cc():
                 pin_memory=True, drop_last=True)
 
         print(f'load {config.DATA.DATASET} dataset')
-    elif 'ltcc' in config.DATA.DATASET:
+    elif 'ltcc' in config.DATA.DATASET or config.DATA.DATASET == 'pipa':
         dataset = build_dataset(config)
         transform_train, transform_test = {}, {}
         for m in backbone_cfg['model_list']:
@@ -226,7 +226,7 @@ def parse_option():
     parser.add_argument('--mode', type=str, default='adaface', help='model version name')
     # Datasets
     parser.add_argument('--root', type=str, help="your root path to data directory", default='/data')
-    parser.add_argument('--dataset', type=str, default='mevid', help="ccvid, mevid, or ltcc", choices=['ccvid', 'mevid', 'ltcc'])
+    parser.add_argument('--dataset', type=str, default='mevid', help="ccvid, mevid, or ltcc", choices=['ccvid', 'mevid', 'ltcc', 'pipa'])
 
     args, unparsed = parser.parse_known_args()
     if args.dataset in VID_DATASET:

@@ -29,7 +29,8 @@ FILE_ROOT = osp.dirname(osp.abspath(__file__))
 DATASET_MAPPING = {
     'ccvid': ['adaface', 'biggait', 'cal-ccvid', 'kprpe'],
     'mevid': ['adaface', 'agrl', 'cal-mevid', 'kprpe'],
-    'ltcc': ['adaface', 'aim', 'cal-ltcc', 'kprpe']
+    'ltcc': ['adaface', 'aim', 'cal-ltcc', 'kprpe'],
+    'pipa': ['pipa-head', 'pipa-upper']
 }
 
 def concat_all_gather(tensors, num_total_examples):

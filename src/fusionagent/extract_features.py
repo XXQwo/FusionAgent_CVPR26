@@ -160,7 +160,7 @@ def extract_test_feats(config, model, queryloader, galleryloader, dataset):
         gf, g_pids, g_camids, g_clothes_ids = extract_img_feature(model, galleryloader)
         # Gather samples from different GPUs
         torch.cuda.empty_cache()
-        qf, q_pids, q_camids, q_clothes_ids = concat_all_gather([qf, q_pids, q_camids, q_clothes_ids], len(dataset.query['dataset']))
+        qf, q_pids, q_camids, q_clothes_ids = concat_all_gather([qf, q_pids, q_camids, q_clothes_ids], len(dataset.train['dataset']))
         gf, g_pids, g_camids, g_clothes_ids = concat_all_gather([gf, g_pids, g_camids, g_clothes_ids], len(dataset.gallery['dataset']))
     torch.cuda.empty_cache()
     time_elapsed = time.time() - since
@@ -350,8 +350,9 @@ def parse_option():
     parser.add_argument('--mode', type=str, default='kprpe,adaface,cal-ccvid,biggait', help='model type/version name')
     # Datasets
     parser.add_argument('--root', type=str, help="your root path to data directory", default='/localscratch/zhujie4/data/')
-    parser.add_argument('--dataset', type=str, default='ccvid', help="ccvid, mevid", choices=['ccvid', 'mevid', 'ltcc'])
+    parser.add_argument('--dataset', type=str, default='ccvid', help="ccvid, mevid", choices=['ccvid', 'mevid', 'ltcc', 'pipa'])
     parser.add_argument('--dataset_type', type=str, default='test', help='test or train', choices=['test', 'train'])
+    parser.add_argument('--pipa_protocol', type=str, default='0to1', choices=['0to1', '1to0'], help='PIPA gallery->query fold')
     parser.add_argument('--train_batch', type=int, default=1, help='batch size for extracting train features')
     parser.add_argument('--num_sample', type=int, default=4, help='number of samples for each query')
     parser.add_argument('--max_batch', type=int, default=-1, help='max batch size for extracting train features')

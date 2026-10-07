@@ -13,6 +13,7 @@ from data.datasets.ltcc import LTCC
 from data.datasets.prcc import PRCC
 from data.datasets.ccvid import CCVID
 from data.datasets.mevid import MEVID
+from data.datasets.pipa import PIPA
 # from datasets.last import LaST
 # from datasets.deepchange import DeepChange
 # from datasets.vcclothes import VCClothes, VCClothesSameClothes, VCClothesClothesChanging
@@ -27,6 +28,7 @@ __factory = {
     # 'last': LaST,
     'ccvid': CCVID,
     'mevid': MEVID,
+    'pipa': PIPA,
     # 'deepchange': DeepChange,
 }
 # register new video datasets here
@@ -41,7 +43,13 @@ def build_dataset(config):
     if config.DATA.DATASET not in __factory.keys():
         raise KeyError("Invalid dataset, got '{}', but expected to be one of {}".format(name, __factory.keys()))
 
-    if config.DATA.DATASET in VID_DATASET:
+    if config.DATA.DATASET == 'pipa':
+        dataset = __factory[config.DATA.DATASET](
+            root=config.DATA.ROOT,
+            few_shot=config.few_shot if hasattr(config, 'few_shot') else None,
+            protocol=getattr(config, 'pipa_protocol', '0to1'),
+        )
+    elif config.DATA.DATASET in VID_DATASET:
         dataset = __factory[config.DATA.DATASET](root=config.DATA.ROOT, 
                                                  sampling_step=config.DATA.SAMPLING_STEP,
                                                  seq_len=config.AUG.SEQ_LEN, 

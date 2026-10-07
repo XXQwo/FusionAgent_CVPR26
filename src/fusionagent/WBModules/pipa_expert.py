@@ -29,7 +29,7 @@ def load_pipa_expert(checkpoint_path):
         if key.startswith("backbone."):
             key = key[len("backbone."):]
         cleaned[key] = value
-    missing, unexpected = model.load_state_dict(cleaned, strict=False)
+    missing, unexpected = model.features.load_state_dict(cleaned, strict=False)
     if missing or unexpected:
         raise RuntimeError(
             "PIPA expert checkpoint mismatch. missing={} unexpected={}".format(

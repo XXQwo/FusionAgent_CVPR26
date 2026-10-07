@@ -258,6 +258,16 @@ Then clear the transformers dynamic module cache:
 rm -rf ~/.cache/modules/transformers_modules/adaface/
 ```
 
+## PIPA adaptation (fork)
+
+This fork contains a PIPA-specific still-image adaptation that replaces the
+upstream face/gait/body assumption with **head + upper-body** experts. It does
+not synthesize gait and does not treat the PIPA head box as a full-body box.
+
+See `PIPA_REPRODUCTION.md` for data preparation, expert training, score
+precomputation, GRPO training, the two-fold test0/test1 protocol, and the fair
+comparison rules for MRM + Evidence Agent.
+
 ## Citation
 
 If you find this project useful for your research, please consider citing our paper:
